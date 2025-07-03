@@ -1,7 +1,10 @@
+import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-# Datos de ejemplo (puedes reemplazar o expandir esto)
+st.title("Curva de la Bañera - Fallas de Luminarias")
+
+# Cargar datos de ejemplo
 df = pd.DataFrame({
     "ID": ["LUM-01", "LUM-02", "LUM-03"],
     "Horas_Funcionamiento": [50, 15000, 41000],
@@ -11,23 +14,20 @@ df = pd.DataFrame({
     "Ubicacion": ["Parque A", "Avenida B", "Calle C"]
 })
 
-# Curva de la bañera (tasa de fallas simulada)
+# Crear curva de la bañera
 x = list(range(0, 50001, 1000))
 y = [0.001 + (1 / (i + 500)) if i < 10000 else 0.001 for i in x]
 y += [((i - 30000)**2 / 1e9) + 0.001 for i in x if i > 30000]
 
-# Crear figura
 fig = go.Figure()
+fig.add_trace(go.Scatter(x=x[:len(y)], y=y, mode='lines', line=dict(color='blue'), name='Curva de la bañera'))
 
-# Línea de la curva
-fig.add_trace(go.Scatter(x=x[:len(y)], y=y, mode='lines', name='Curva de la bañera', line=dict(color='blue')))
-
-# Zonas de la curva
+# Zonas
 fig.add_vrect(x0=0, x1=10000, fillcolor="lightgray", opacity=0.3, annotation_text="Fallas tempranas", annotation_position="top left")
 fig.add_vrect(x0=10000, x1=30000, fillcolor="lightgreen", opacity=0.3, annotation_text="Fallas aleatorias", annotation_position="top left")
 fig.add_vrect(x0=30000, x1=50000, fillcolor="salmon", opacity=0.3, annotation_text="Desgaste", annotation_position="top left")
 
-# Añadir puntos con hover info
+# Puntos de los equipos
 for _, row in df.iterrows():
     fig.add_trace(go.Scatter(
         x=[row["Horas_Funcionamiento"]],
@@ -43,13 +43,12 @@ for _, row in df.iterrows():
             f"<b>Falla:</b> {row['Fecha_Falla']}<extra></extra>"
     ))
 
-# Diseño final
 fig.update_layout(
-    title="Curva de la Bañera - Análisis de Fallas de Luminarias",
+    title="Curva de la Bañera - Visualización de Fallas",
     xaxis_title="Horas de funcionamiento",
-    yaxis_title="Tasa de fallas (representativa)",
-    height=500,
-    showlegend=False
+    yaxis_title="Tasa de fallas (referencial)",
+    showlegend=False,
+    height=500
 )
 
-fig.show()
+st.plotly_chart(fig, use_container_width=True)
